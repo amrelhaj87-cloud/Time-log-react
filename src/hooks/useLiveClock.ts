@@ -1,32 +1,32 @@
-import { useEffect, useState } from "react";
-import type { Lang } from "../types";
+import { useState, useEffect } from 'react';
 
-function pad2(n: number): string {
-  return String(n).padStart(2, "0");
-}
-
-/** Returns the current time as "HH:MM" (24h) updated every second. */
-export function useLiveClock(): string {
-  const [time, setTime] = useState(() => {
-    const now = new Date();
-    return `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
-  });
+export function useLiveClock(lang: 'ar' | 'en') {
+  const [timeStr, setTimeStr] = useState('');
 
   useEffect(() => {
-    const id = setInterval(() => {
+    const updateClock = () => {
       const now = new Date();
-      setTime(`${pad2(now.getHours())}:${pad2(now.getMinutes())}`);
-    }, 1000 * 15); // refresh every 15s is plenty for a minute-resolution clock
-    return () => clearInterval(id);
-  }, []);
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      let ampm = '';
 
-  return time;
-}
+      if (lang === 'ar') {
+        ampm = hours >= 12 ? 'م' : 'ص';
+        hours = hours % 12;
+        if (hours === 0) hours = 12;
+        setTimeStr(`${String(hours).padStart(2, '0')}:${minutes} ${ampm}`);
+      } else {
+        ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        if (hours === 0) hours = 12;
+        setTimeStr(`${String(hours).padStart(2, '0')}:${minutes} ${ampm}`);
+      }
+    };
 
-/** Formats a Date as a localized header date string, e.g. "الأربعاء، 5 أغسطس". */
-export function formatHeaderDate(date: Date, lang: Lang, dayNames: string[], monthNames: string[]): string {
-  const dayName = dayNames[date.getDay()];
-  const monthName = monthNames[date.getMonth()];
-  const day = date.getDate();
-  return lang === "ar" ? `${dayName}، ${day} ${monthName}` : `${dayName}, ${monthName} ${day}`;
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, [lang]);
+
+  return timeStr;
 }
