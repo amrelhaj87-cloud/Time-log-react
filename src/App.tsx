@@ -30,7 +30,7 @@ export function App() {
   // 2. حالات التحكم المعرفة للهيدر
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isCompact, setIsCompact] = useState<boolean>(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   // 3. حالات المودال والتايمر
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
@@ -124,13 +124,12 @@ export function App() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* 1. تمرير كامل الـ Props المطلوبة في HeaderProps */}
+      {/* 1. تمرير الخواص المحددة لـ HeaderProps */}
       <Header
         currentDate={currentDate}
         onPickDate={setCurrentDate}
         isCompact={isCompact}
         onToggleCompact={() => setIsCompact(!isCompact)}
-        onResetToday={() => setCurrentDate(new Date())}
         saveStatus={saveStatus}
       />
 
