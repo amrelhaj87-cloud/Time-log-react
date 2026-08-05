@@ -1,13 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLanguage } from './context/LanguageContext';
+import { useTheme } from './context/ThemeContext';
 import { useTimer } from './hooks/useTimer';
+
+// المكونات
+import Header from './components/Header';
+import { Dashboard } from './components/Dashboard/Dashboard';
+import { HoursSection } from './components/Hours/HoursSection';
 import { TimerBar } from './components/Hours/TimerBar';
-import { TimerModal } from './components/Modals/TimerModal';
 import { PrioritiesSection } from './components/Priorities/PrioritiesSection';
+import { TimerModal } from './components/Modals/TimerModal';
+import Footer from './components/Common/Footer';
+
+// الـ Types
 import type { DayPriority, TagCode } from './types';
 
 export function App() {
   const { lang } = useLanguage();
+  const { isDarkMode } = useTheme();
 
   // 1. التايمر Hook
   const {
@@ -18,11 +28,15 @@ export function App() {
     cancelTimer,
   } = useTimer();
 
-  // 2. حالات المودال والتايمر
+  // 2. حالات العرض والتحكم (Compact / Expanded)
+  const [isCompact, setIsCompact] = useState<boolean>(false);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  
+  // 3. حالات المودال والتايمر
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [pendingTimeRange, setPendingTimeRange] = useState<{ start: Date; end: Date } | null>(null);
 
-  // 3. حالة الهدف الذهبي والأولويات
+  // 4. حالة الهدف الذهبي والأولويات
   const [goldenGoal, setGoldenGoal] = useState<{ text: string; done: boolean; tag: TagCode }>({
     text: '',
     done: false,
@@ -36,37 +50,7 @@ export function App() {
     q4: [{ id: '4', text: '', done: false, tag: '' }],
   });
 
-  // استرجاع البيانات المجهزة لليوم الحالي من localStorage
-  useEffect(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const savedData = localStorage.getItem(`day:${todayStr}`);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.goldenGoal) setGoldenGoal(parsed.goldenGoal);
-        if (parsed.quadrants) setQuadrants(parsed.quadrants);
-      } catch (e) {
-        console.warn('Could not parse local day data', e);
-      }
-    }
-  }, []);
-
-  // حفظ التغييرات في localStorage
-  const persistState = (newGolden = goldenGoal, newQuads = quadrants) => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const savedData = localStorage.getItem(`day:${todayStr}`);
-    const existing = savedData ? JSON.parse(savedData) : {};
-    localStorage.setItem(
-      `day:${todayStr}`,
-      JSON.stringify({
-        ...existing,
-        goldenGoal: newGolden,
-        quadrants: newQuads,
-      })
-    );
-  };
-
-  // 4. معالجة التايمر
+  // معالجة إيقاف التايمر وفتح التوصيف
   const handleStopTimer = () => {
     const range = stopTimer();
     if (range) {
@@ -76,50 +60,41 @@ export function App() {
   };
 
   const handleSaveTimerActivity = (text: string, start: Date, end: Date) => {
-    console.log('Saved activity to hours:', text, start, end);
+    console.log('Saved activity:', text, start, end);
   };
 
-  // 5. دوال إدارة الأولويات والهدف الذهبي
+  // دوال إدارة الأولويات والهدف الذهبي
   const handleUpdateGoldenGoal = (updated: { text: string; done: boolean; tag: TagCode }) => {
     setGoldenGoal(updated);
-    persistState(updated, quadrants);
   };
 
   const handleClearGoldenGoal = () => {
-    const cleared = { text: '', done: false, tag: '' as TagCode };
-    setGoldenGoal(cleared);
-    persistState(cleared, quadrants);
+    setGoldenGoal({ text: '', done: false, tag: '' });
   };
 
   const handleChangePriority = (quadKey: string, index: number, updated: DayPriority) => {
-    const newQuads = {
-      ...quadrants,
-      [quadKey]: quadrants[quadKey].map((item, idx) => (idx === index ? updated : item)),
-    };
-    setQuadrants(newQuads);
-    persistState(goldenGoal, newQuads);
+    setQuadrants((prev) => ({
+      ...prev,
+      [quadKey]: prev[quadKey].map((item, idx) => (idx === index ? updated : item)),
+    }));
   };
 
   const handleAddPriority = (quadKey: string) => {
-    const newQuads = {
-      ...quadrants,
+    setQuadrants((prev) => ({
+      ...prev,
       [quadKey]: [
-        ...quadrants[quadKey],
-        { id: String(Date.now()), text: '', done: false, tag: '' as TagCode },
+        ...prev[quadKey],
+        { id: String(Date.now()), text: '', done: false, tag: '' },
       ],
-    };
-    setQuadrants(newQuads);
-    persistState(goldenGoal, newQuads);
+    }));
   };
 
   const handleDeletePriority = (quadKey: string, index: number) => {
     if (quadrants[quadKey].length <= 1) return;
-    const newQuads = {
-      ...quadrants,
-      [quadKey]: quadrants[quadKey].filter((_, idx) => idx !== index),
-    };
-    setQuadrants(newQuads);
-    persistState(goldenGoal, newQuads);
+    setQuadrants((prev) => ({
+      ...prev,
+      [quadKey]: prev[quadKey].filter((_, idx) => idx !== index),
+    }));
   };
 
   const handlePromoteToGolden = (quadKey: string, index: number) => {
@@ -135,15 +110,8 @@ export function App() {
       return;
     }
 
-    const newGolden = { text: item.text, done: false, tag: (item.tag || '') as TagCode };
-    const newQuads = {
-      ...quadrants,
-      [quadKey]: quadrants[quadKey].filter((_, idx) => idx !== index),
-    };
-
-    setGoldenGoal(newGolden);
-    setQuadrants(newQuads);
-    persistState(newGolden, newQuads);
+    setGoldenGoal({ text: item.text, done: false, tag: (item.tag || '') as TagCode });
+    handleDeletePriority(quadKey, index);
   };
 
   const handleRollover = () => {
@@ -155,13 +123,24 @@ export function App() {
   };
 
   return (
-    <div className="wrap max-w-[860px] mx-auto p-3 min-h-screen text-[var(--ink)] bg-[var(--bg)]">
-      <header className="flex items-center justify-between mb-4 pb-2 border-b border-[var(--line)]">
-        <h1 className="font-serif font-bold text-2xl text-[var(--teal-dark)]">
-          {lang === 'ar' ? 'سجل الوقت' : 'Time Log'}
-        </h1>
-      </header>
+    <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
+      {/* 1. الهيدر الرئيسي (Phase 1) */}
+      <Header
+        currentDate={currentDate}
+        onDateChange={setCurrentDate}
+        isCompact={isCompact}
+        onToggleCompact={() => setIsCompact(!isCompact)}
+      />
 
+      {/* 2. الداشبورد والتصفح بالأسبوع (Phase 2) */}
+      {!isCompact && (
+        <Dashboard
+          currentDate={currentDate}
+          onDateChange={setCurrentDate}
+        />
+      )}
+
+      {/* 3. قسم الساعات 24 ساعة + شريط التايمر (Phase 2 & 3) */}
       <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-3 mb-3 shadow-xs">
         <TimerBar
           isRunning={isRunning}
@@ -170,8 +149,11 @@ export function App() {
           onStop={handleStopTimer}
           onCancel={cancelTimer}
         />
+
+        <HoursSection currentDate={currentDate} />
       </section>
 
+      {/* 4. قسم الأولويات والهدف الذهبي (Phase 3) */}
       <PrioritiesSection
         goldenGoal={goldenGoal}
         quadrants={quadrants}
@@ -184,6 +166,10 @@ export function App() {
         onRollover={handleRollover}
       />
 
+      {/* 5. الفوتر (Phase 2) */}
+      <Footer />
+
+      {/* 6. مودال التايمر (Phase 3) */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
