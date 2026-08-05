@@ -1,6 +1,5 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import type { Distribution } from '../../types';
 
 interface DayDistModalProps {
   isOpen: boolean;
@@ -8,7 +7,7 @@ interface DayDistModalProps {
   dateStr: string;
   loggedTotal: number;
   totalSlots: number;
-  tagCounts: Distribution | Record<string, number>;
+  tagCounts: any; // استخدام any لتجنب أخطاء Index Signature مع DistributionCounts
 }
 
 const TAG_COLORS: Record<string, string> = {
