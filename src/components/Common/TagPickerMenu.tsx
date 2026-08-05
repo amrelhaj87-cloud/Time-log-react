@@ -6,18 +6,17 @@ interface TagPickerMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (code: TagCode) => void;
-  currentTag: TagCode;
-  anchorRect: DOMRect | null;
+  currentTag?: TagCode;
 }
 
-const TAG_LIST: { code: TagCode; titleAr: string; titleEn: string; color: string; bg: string }[] = [
-  { code: 'E', titleAr: 'Earning (الكسب)', titleEn: 'Earning', color: 'var(--teal)', bg: 'var(--teal-tint)' },
-  { code: 'V', titleAr: 'Vision (الرؤية)', titleEn: 'Vision', color: 'var(--amber)', bg: 'var(--amber-tint)' },
-  { code: 'R', titleAr: 'Recovery (التعافي)', titleEn: 'Recovery', color: 'var(--blue)', bg: 'var(--blue-tint)' },
-  { code: 'S', titleAr: 'Service (الخدمة)', titleEn: 'Service', color: 'var(--rose)', bg: 'var(--rose-tint)' },
-  { code: 'SC', titleAr: 'Self-Care (رعاية)', titleEn: 'Self-Care', color: '#7C5CBF', bg: '#EFEAF8' },
-  { code: 'SL', titleAr: 'Sleep (نوم)', titleEn: 'Sleep', color: '#2E3A6B', bg: '#E4E6EF' },
-  { code: '', titleAr: 'بدون تصنيف', titleEn: 'Unassigned', color: 'var(--ink-faint)', bg: 'var(--card)' },
+const TAG_ITEMS: { code: TagCode; labelAr: string; labelEn: string; color: string; bg: string }[] = [
+  { code: 'E', labelAr: 'Earning (الكسب)', labelEn: 'Earning', color: 'var(--teal)', bg: 'var(--teal-tint)' },
+  { code: 'V', labelAr: 'Vision (الرؤية)', labelEn: 'Vision', color: 'var(--amber)', bg: 'var(--amber-tint)' },
+  { code: 'R', labelAr: 'Recovery (التعافي)', labelEn: 'Recovery', color: 'var(--blue)', bg: 'var(--blue-tint)' },
+  { code: 'S', labelAr: 'Service (الخدمة)', labelEn: 'Service', color: 'var(--rose)', bg: 'var(--rose-tint)' },
+  { code: 'SC', labelAr: 'Self-Care (رعاية)', labelEn: 'Self-Care', color: '#7C5CBF', bg: '#EFEAF8' },
+  { code: 'SL', labelAr: 'Sleep (نوم)', labelEn: 'Sleep', color: '#2E3A6B', bg: '#E4E6EF' },
+  { code: '', labelAr: 'إلغاء التصنيف', labelEn: 'Unassign', color: 'var(--ink-faint)', bg: 'var(--card)' },
 ];
 
 export const TagPickerMenu: React.FC<TagPickerMenuProps> = ({
@@ -27,34 +26,58 @@ export const TagPickerMenu: React.FC<TagPickerMenuProps> = ({
   currentTag,
 }) => {
   const { lang } = useLanguage();
+
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-xs dir-rtl"
       onClick={onClose}
     >
       <div
-        className="bg-[var(--card)] border border-[var(--line)] rounded-2xl p-3 shadow-2xl grid grid-cols-4 sm:grid-cols-7 gap-1.5 min-w-[260px] dir-rtl animate-in fade-in zoom-in-95 duration-100"
+        className="bg-[var(--card)] border border-[var(--line)] rounded-2xl p-3.5 shadow-2xl max-w-[320px] w-full mx-4 flex flex-col gap-2 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        {TAG_LIST.map((t) => (
-          <button
-            key={t.code || 'none'}
-            type="button"
-            onClick={() => {
-              onSelect(t.code);
-              onClose();
-            }}
-            style={{ color: t.color, backgroundColor: t.bg }}
-            className={`p-2 rounded-xl border text-xs font-black text-center transition-all cursor-pointer hover:scale-105 ${
-              currentTag === t.code ? 'ring-2 ring-[var(--teal-dark)] font-black' : 'border-[var(--line)]'
-            }`}
-            title={lang === 'ar' ? t.titleAr : t.titleEn}
-          >
-            {t.code || '—'}
-          </button>
-        ))}
+        <div className="text-xs font-bold text-[var(--teal-dark)] text-center pb-1.5 border-b border-[var(--line)]">
+          {lang === 'ar' ? 'اختر تصنيف النشاط:' : 'Select Category Tag:'}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 my-1">
+          {TAG_ITEMS.map((item) => {
+            const isSelected = currentTag === item.code;
+            return (
+              <button
+                key={item.code || 'none'}
+                type="button"
+                onClick={() => {
+                  onSelect(item.code);
+                  onClose();
+                }}
+                style={{
+                  color: item.color,
+                  backgroundColor: item.bg,
+                  borderColor: isSelected ? item.color : 'transparent',
+                }}
+                className={`py-2 px-2.5 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer flex items-center justify-between hover:scale-102 ${
+                  isSelected ? 'ring-2 ring-offset-1 font-black shadow-xs' : ''
+                }`}
+              >
+                <span>{item.code || '—'}</span>
+                <span className="text-[10px] opacity-80">
+                  {lang === 'ar' ? item.labelAr.split(' ')[0] : item.labelEn}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full py-1.5 text-xs text-[var(--ink-soft)] bg-[var(--line)]/40 hover:bg-[var(--line)] rounded-xl font-bold cursor-pointer transition-colors"
+        >
+          {lang === 'ar' ? 'إغلاق' : 'Close'}
+        </button>
       </div>
     </div>
   );

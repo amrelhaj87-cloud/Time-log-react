@@ -1,18 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { TagPickerMenu } from '../Common/TagPickerMenu';
 import type { HourData, TagCode } from '../../types';
 
 export interface HourRowProps {
   hourKey: string;
   hourLabel?: string;
   hourData?: HourData;
-  // دعم النمط الأول (onChangeText / onChangeTag)
   onChangeText?: (key: string, note: string) => void;
   onChangeTag?: (key: string, tag: TagCode) => void;
   onCopyDown?: (key: string) => void;
   hasNextHour?: boolean;
-
-  // دعم النمط الثاني (onUpdate / onCopyNext)
   onUpdate?: (tag: TagCode, note: string) => void;
   onCopyNext?: () => void;
   isLastHour?: boolean;
@@ -40,19 +38,16 @@ export const HourRow: React.FC<HourRowProps> = ({
   isLastHour = false,
 }) => {
   const { lang } = useLanguage();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   const currentNote = hourData?.note || '';
   const currentTag = (hourData?.tag || '') as TagCode;
 
-  const handleTagCycle = () => {
-    const tags: TagCode[] = ['', 'E', 'V', 'R', 'S', 'SC', 'SL'];
-    const currentIndex = tags.indexOf(currentTag);
-    const nextTag = tags[(currentIndex + 1) % tags.length];
-
+  const handleSelectTag = (newTag: TagCode) => {
     if (onChangeTag) {
-      onChangeTag(hourKey, nextTag);
+      onChangeTag(hourKey, newTag);
     } else if (onUpdate) {
-      onUpdate(nextTag, currentNote);
+      onUpdate(newTag, currentNote);
     }
   };
 
@@ -78,12 +73,10 @@ export const HourRow: React.FC<HourRowProps> = ({
 
   return (
     <div className="flex items-center gap-1.5 py-1 px-1 border-b border-[var(--line)] hover:bg-[var(--teal-tint)]/40 transition-colors">
-      {/* 1. التسمية */}
       <span className="w-11 shrink-0 text-xs font-semibold text-[var(--ink-soft)]">
         {displayLabel}
       </span>
 
-      {/* 2. حقل الملاحظة */}
       <input
         type="text"
         value={currentNote}
@@ -92,21 +85,21 @@ export const HourRow: React.FC<HourRowProps> = ({
         className="flex-1 min-w-0 bg-transparent border-b border-transparent focus:border-[var(--teal)] text-xs text-[var(--ink)] py-1 px-1 outline-none"
       />
 
-      {/* 3. زر التاقات التفاعلي */}
+      {/* زر التاق المنسدل التفاعلي */}
       <button
         type="button"
-        onClick={handleTagCycle}
+        onClick={() => setIsPickerOpen(true)}
         style={{
           borderColor: currentTag ? TAG_COLORS[currentTag] : 'var(--line)',
           color: currentTag ? TAG_COLORS[currentTag] : 'var(--ink-faint)',
         }}
-        className="w-10 h-7 shrink-0 rounded-lg border text-[11px] font-bold bg-[var(--card)] hover:scale-95 transition-all flex items-center justify-center cursor-pointer"
-        title={currentTag || (lang === 'ar' ? 'بدون تصنيف' : 'Unassigned')}
+        className="w-10 h-7 shrink-0 rounded-lg border text-[11px] font-bold bg-[var(--card)] hover:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+        title={currentTag || (lang === 'ar' ? 'اختر تصنيف' : 'Select tag')}
       >
         {currentTag || '—'}
       </button>
 
-      {/* 4. زر النسخ السريع لأسفل (بعد زر التاقات مباشرة) */}
+      {/* زر النسخ لأسفل بعد التاق */}
       {showCopyBtn && (
         <button
           type="button"
@@ -117,6 +110,14 @@ export const HourRow: React.FC<HourRowProps> = ({
           ⬇️
         </button>
       )}
+
+      {/* المنيو المنبثق لاختيار التصنيف */}
+      <TagPickerMenu
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={handleSelectTag}
+        currentTag={currentTag}
+      />
     </div>
   );
 };
