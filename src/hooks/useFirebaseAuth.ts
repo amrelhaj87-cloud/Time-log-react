@@ -9,8 +9,8 @@ import {
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  User,
 } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 import { initializeApp, getApps } from 'firebase/app';
 
 const firebaseConfig = {
@@ -45,13 +45,15 @@ export function useFirebaseAuth() {
     return () => unsubscribe();
   }, []);
 
-  const loginWithGoogle = () => {
-    signInWithRedirect(auth, googleProvider);
+  const loginWithGoogle = async () => {
+    await signInWithRedirect(auth, googleProvider);
   };
 
   const loginWithEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e, p);
   const signUpWithEmail = (e: string, p: string) => createUserWithEmailAndPassword(auth, e, p);
-  const logout = () => signOut(auth);
+  const logout = async () => {
+    await signOut(auth);
+  };
   const resetPassword = (e: string) => sendPasswordResetEmail(auth, e);
 
   return { user, loading, loginWithGoogle, loginWithEmail, signUpWithEmail, logout, resetPassword };

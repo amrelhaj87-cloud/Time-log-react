@@ -14,8 +14,10 @@ import { TagRings } from './components/Dashboard/TagRings';
 import { HoursSection } from './components/Hours/HoursSection';
 import { TimerBar } from './components/Hours/TimerBar';
 import { PrioritiesSection } from './components/Priorities/PrioritiesSection';
+import { TagLegend } from './components/Common/TagLegend';
 import { TimerModal } from './components/Modals/TimerModal';
 import { StatsModal } from './components/Modals/StatsModal';
+import { DayDistModal } from './components/Modals/DayDistModal';
 import { AuthModal } from './components/Modals/AuthModal';
 import { ExportModal } from './components/Modals/ExportModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
@@ -58,6 +60,7 @@ function AppContent() {
   // 3. حالات المودالات
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [isDayDistModalOpen, setIsDayDistModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -98,8 +101,8 @@ function AppContent() {
     }
   };
 
-  const handleSaveTimerActivity = (text: string, start: Date, end: Date) => {
-    console.log('Saved activity:', text, start, end);
+  const handleSaveTimerActivity = (text: string, start: Date, end: Date, tag: TagCode) => {
+    console.log('Saved activity:', text, start, end, tag);
   };
 
   // دوال الأولويات والهدف الذهبي
@@ -171,14 +174,14 @@ function AppContent() {
         onToggleCompact={() => setIsCompact(!isCompact)}
         ringFilled={dayStats.loggedTotal}
         ringTotal={dayStats.totalSlots}
-        onOpenStatsModal={() => setIsStatsModalOpen(true)}
+        onOpenStatsModal={() => setIsDayDistModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         user={user}
-        onLogout={logout}
+        onLogout={() => { logout(); }}
       />
 
-      {/* 2. شريط الأسبوع المحدث الذي يبدأ من الاثنين */}
+      {/* 2. شريط الأسبوع المحدث ابتداءً من يوم الاثنين */}
       {!isCompact && (
         <WeekStrip
           currentDate={currentDate}
@@ -234,10 +237,13 @@ function AppContent() {
         onRollover={handleRollover}
       />
 
-      {/* 6. الفوتر */}
+      {/* 6. دليل التصنيفات الملون السفلي */}
+      <TagLegend />
+
+      {/* 7. الفوتر */}
       <Footer />
 
-      {/* 7. المودالات */}
+      {/* 8. المودالات */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
@@ -251,6 +257,15 @@ function AppContent() {
         weekStats={weekStats}
         monthStats={monthStats}
         daysInMonth={daysInMonth}
+      />
+
+      <DayDistModal
+        isOpen={isDayDistModalOpen}
+        onClose={() => setIsDayDistModalOpen(false)}
+        dateStr={dateStr}
+        loggedTotal={dayStats.loggedTotal}
+        totalSlots={dayStats.totalSlots}
+        tagCounts={dayStats.counts}
       />
 
       <AuthModal
