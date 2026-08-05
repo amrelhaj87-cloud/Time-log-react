@@ -10,7 +10,19 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { lang, setLang } = useLanguage();
-  const { isDarkMode, toggleTheme } = useTheme();
+  const themeContext = useTheme() as any;
+  const isDarkMode = themeContext.isDarkMode;
+
+  // دعم كلا الاسمين المحتملين لتبديل المظهر
+  const handleToggleTheme = () => {
+    if (typeof themeContext.toggleDarkMode === 'function') {
+      themeContext.toggleDarkMode();
+    } else if (typeof themeContext.toggleTheme === 'function') {
+      themeContext.toggleTheme();
+    } else if (typeof themeContext.setIsDarkMode === 'function') {
+      themeContext.setIsDarkMode(!isDarkMode);
+    }
+  };
 
   const [birthDate, setBirthDate] = useState<string>(() => {
     return localStorage.getItem('user_birth_date') || '';
@@ -59,7 +71,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div className="flex justify-between items-center bg-[var(--card)] p-2 rounded-xl border border-[var(--line)] text-xs">
             <span>{lang === 'ar' ? 'المظهر / Theme' : 'Theme'}</span>
             <button
-              onClick={toggleTheme}
+              onClick={handleToggleTheme}
               className="py-1 px-3 bg-[var(--line)] text-[var(--ink)] font-bold rounded-lg cursor-pointer"
             >
               {isDarkMode ? '🌙 Dark' : '☀️ Light'}
