@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from './context/LanguageContext';
 import { useTimer } from './hooks/useTimer';
 import { TimerBar } from './components/Hours/TimerBar';
@@ -9,7 +9,7 @@ import type { DayPriority, TagCode } from './types';
 export function App() {
   const { lang } = useLanguage();
 
-  // 1. استخدام التايمر Hook
+  // 1. التايمر Hook
   const {
     isRunning,
     formattedElapsed,
@@ -22,7 +22,7 @@ export function App() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [pendingTimeRange, setPendingTimeRange] = useState<{ start: Date; end: Date } | null>(null);
 
-  // 3. حالة الهدف الذهبي والأولويات (Local State مؤقت أو محمل من Storage)
+  // 3. حالة الهدف الذهبي والأولويات
   const [goldenGoal, setGoldenGoal] = useState<{ text: string; done: boolean; tag: TagCode }>({
     text: '',
     done: false,
@@ -36,7 +36,7 @@ export function App() {
     q4: [{ id: '4', text: '', done: false, tag: '' }],
   });
 
-  // استرجاع البيانات المجهزة لليوم الحالي من localStorage عند التشغيل
+  // استرجاع البيانات المجهزة لليوم الحالي من localStorage
   useEffect(() => {
     const todayStr = new Date().toISOString().split('T')[0];
     const savedData = localStorage.getItem(`day:${todayStr}`);
@@ -51,7 +51,7 @@ export function App() {
     }
   }, []);
 
-  // حفظ التغييرات في localStorage تلقائياً
+  // حفظ التغييرات في localStorage
   const persistState = (newGolden = goldenGoal, newQuads = quadrants) => {
     const todayStr = new Date().toISOString().split('T')[0];
     const savedData = localStorage.getItem(`day:${todayStr}`);
@@ -77,7 +77,6 @@ export function App() {
 
   const handleSaveTimerActivity = (text: string, start: Date, end: Date) => {
     console.log('Saved activity to hours:', text, start, end);
-    // يمكن ربطه بدالة التحديث الخاصة بـ HoursGrid
   };
 
   // 5. دوال إدارة الأولويات والهدف الذهبي
@@ -157,14 +156,12 @@ export function App() {
 
   return (
     <div className="wrap max-w-[860px] mx-auto p-3 min-h-screen text-[var(--ink)] bg-[var(--bg)]">
-      {/* Header بسيط للمشروع */}
       <header className="flex items-center justify-between mb-4 pb-2 border-b border-[var(--line)]">
         <h1 className="font-serif font-bold text-2xl text-[var(--teal-dark)]">
           {lang === 'ar' ? 'سجل الوقت' : 'Time Log'}
         </h1>
       </header>
 
-      {/* قسم الساعات مع شريط التايمر */}
       <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-3 mb-3 shadow-xs">
         <TimerBar
           isRunning={isRunning}
@@ -175,7 +172,6 @@ export function App() {
         />
       </section>
 
-      {/* قسم الأولويات والهدف الذهبي */}
       <PrioritiesSection
         goldenGoal={goldenGoal}
         quadrants={quadrants}
@@ -188,7 +184,6 @@ export function App() {
         onRollover={handleRollover}
       />
 
-      {/* مودال التايمر */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
@@ -199,5 +194,4 @@ export function App() {
   );
 }
 
-// تصدير افتراضي لحل خطأ TS2613
 export default App;

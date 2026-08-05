@@ -40,6 +40,7 @@ export interface DayPriority {
   id: string;
   text: string;
   done: boolean;
+  tag?: TagCode | string;
 }
 
 // ===== Per-day data =====
