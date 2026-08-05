@@ -124,13 +124,15 @@ export function App() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* 1. تمرير الخواص المحددة لـ HeaderProps */}
+      {/* 1. تمرير الخواص المكتملة لـ Header بما فيها ringFilled و ringTotal */}
       <Header
         currentDate={currentDate}
         onPickDate={setCurrentDate}
         isCompact={isCompact}
         onToggleCompact={() => setIsCompact(!isCompact)}
         saveStatus={saveStatus}
+        ringFilled={0}
+        ringTotal={24}
       />
 
       {/* 2. قسم الساعات 24 ساعة + شريط التايمر (Phase 2 & 3) */}
@@ -173,4 +175,4 @@ export function App() {
   );
 }
 
-export default App; 
+export default App;
