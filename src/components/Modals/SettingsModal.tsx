@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { calculateAgeDetails } from '../../lib/ageCalculator';
+import { ContactSection } from '../Common/ContactSection';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const themeContext = useTheme() as any;
   const isDarkMode = themeContext.isDarkMode;
 
-  // دعم كلا الاسمين المحتملين لتبديل المظهر
+  // دعم التبديل السلس للمظهر
   const handleToggleTheme = () => {
     if (typeof themeContext.toggleDarkMode === 'function') {
       themeContext.toggleDarkMode();
@@ -44,7 +45,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         <div className="flex items-center justify-between pb-2 mb-3 border-b border-[var(--line)]">
           <h3 className="font-bold text-lg text-[var(--teal-dark)] flex items-center gap-2">
             <span>⚙️</span>
-            <span>{lang === 'ar' ? 'الإعدادات وحاسبة العمر' : 'Settings & Age Calculator'}</span>
+            <span>{lang === 'ar' ? 'الإعدادات والدعم الفني' : 'Settings & Support'}</span>
           </h3>
           <button
             onClick={onClose}
@@ -80,7 +81,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* 2. حاسبة العمر والتأمل */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 pb-3">
           <div className="text-xs font-bold text-[var(--teal-dark)]">🎂 {lang === 'ar' ? 'حاسبة العمر والتأمل' : 'Age & Life Calculator'}</div>
           <div className="text-[11px] text-[var(--ink-faint)]">
             {lang === 'ar' ? 'أدخل تاريخ ميلادك لحساب عمرك بدقة والأسابيع التي عشتها:' : 'Enter birth date to view your exact age:'}
@@ -111,6 +112,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
           )}
         </div>
+
+        {/* 3. قسم التواصل والدعم الفني (EmailJS) */}
+        <ContactSection />
       </div>
     </div>
   );
