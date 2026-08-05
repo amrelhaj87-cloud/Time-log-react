@@ -3,14 +3,13 @@ import { useLanguage } from './context/LanguageContext';
 import { useTheme } from './context/ThemeContext';
 import { useTimer } from './hooks/useTimer';
 
-// المكونات
-import Header from './components/Header';
-import { Dashboard } from './components/Dashboard/Dashboard';
+// المكونات - استخدام Named Imports لمنع خطأ TS2613
+import { Header } from './components/Header';
 import { HoursSection } from './components/Hours/HoursSection';
 import { TimerBar } from './components/Hours/TimerBar';
 import { PrioritiesSection } from './components/Priorities/PrioritiesSection';
 import { TimerModal } from './components/Modals/TimerModal';
-import Footer from './components/Common/Footer';
+import { Footer } from './components/Common/Footer';
 
 // الـ Types
 import type { DayPriority, TagCode } from './types';
@@ -132,15 +131,7 @@ export function App() {
         onToggleCompact={() => setIsCompact(!isCompact)}
       />
 
-      {/* 2. الداشبورد والتصفح بالأسبوع (Phase 2) */}
-      {!isCompact && (
-        <Dashboard
-          currentDate={currentDate}
-          onDateChange={setCurrentDate}
-        />
-      )}
-
-      {/* 3. قسم الساعات 24 ساعة + شريط التايمر (Phase 2 & 3) */}
+      {/* 2. قسم الساعات 24 ساعة + شريط التايمر (Phase 2 & 3) */}
       <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-3 mb-3 shadow-xs">
         <TimerBar
           isRunning={isRunning}
@@ -150,10 +141,10 @@ export function App() {
           onCancel={cancelTimer}
         />
 
-        <HoursSection currentDate={currentDate} />
+        <HoursSection />
       </section>
 
-      {/* 4. قسم الأولويات والهدف الذهبي (Phase 3) */}
+      {/* 3. قسم الأولويات والهدف الذهبي (Phase 3) */}
       <PrioritiesSection
         goldenGoal={goldenGoal}
         quadrants={quadrants}
@@ -166,10 +157,10 @@ export function App() {
         onRollover={handleRollover}
       />
 
-      {/* 5. الفوتر (Phase 2) */}
+      {/* 4. الفوتر (Phase 2) */}
       <Footer />
 
-      {/* 6. مودال التايمر (Phase 3) */}
+      {/* 5. مودال التايمر (Phase 3) */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
