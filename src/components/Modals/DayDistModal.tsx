@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import type { DistributionCounts } from '../../types';
 
 interface DayDistModalProps {
   isOpen: boolean;
@@ -7,7 +8,7 @@ interface DayDistModalProps {
   dateStr: string;
   loggedTotal: number;
   totalSlots: number;
-  tagCounts: Record<string, number>;
+  tagCounts: DistributionCounts;
 }
 
 const TAG_COLORS: Record<string, string> = {
@@ -35,7 +36,7 @@ export const DayDistModal: React.FC<DayDistModalProps> = ({
   const emptyCount = Math.max(0, totalSlots - loggedTotal);
   const categories = [
     { key: 'empty', labelAr: 'بدون تسجيل', labelEn: 'No Log', count: emptyCount },
-    { key: 'unassigned', labelAr: 'بدون بند', labelEn: 'Unassigned', count: tagCounts.unassigned || 0 },
+    { key: 'unassigned', labelAr: 'بدون بند', labelEn: 'Unassigned', count: (tagCounts as any).unassigned || 0 },
     { key: 'SL', labelAr: 'SL', labelEn: 'SL', count: tagCounts.SL || 0 },
     { key: 'SC', labelAr: 'SC', labelEn: 'SC', count: tagCounts.SC || 0 },
     { key: 'S', labelAr: 'S', labelEn: 'S', count: tagCounts.S || 0 },
@@ -56,12 +57,12 @@ export const DayDistModal: React.FC<DayDistModalProps> = ({
                 : `Full Day Distribution - ${dateStr}`}
             </span>
           </h3>
-          <button onClick={onClose} className="text-xl text-[var(--ink-soft)] cursor-pointer">
+          <button onClick={onClose} className="text-xl text-[var(--ink-soft)] hover:text-[var(--rose)] cursor-pointer">
             &times;
           </button>
         </div>
 
-        {/* الرسم البياني اليدوي الدائري */}
+        {/* الرسم البياني الدائري */}
         <div className="flex flex-col items-center my-4">
           <div className="relative w-44 h-44 flex items-center justify-center border-8 border-[var(--line)] rounded-full">
             <div className="text-center">
@@ -72,10 +73,10 @@ export const DayDistModal: React.FC<DayDistModalProps> = ({
           </div>
         </div>
 
-        {/* النسبة المئوية والتفاصيل */}
+        {/* التفاصيل والنسب المئوية */}
         <div className="flex flex-col gap-1.5 text-xs font-bold">
           {categories.map((c) => {
-            const pct = ((c.count / totalSlots) * 100).toFixed(1);
+            const pct = totalSlots > 0 ? ((c.count / totalSlots) * 100).toFixed(1) : '0.0';
             return (
               <div key={c.key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
