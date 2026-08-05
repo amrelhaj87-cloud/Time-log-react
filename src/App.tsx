@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { useLanguage } from './context/LanguageContext';
 import { useTheme } from './context/ThemeContext';
 import { useTimer } from './hooks/useTimer';
+import { useDistribution } from './hooks/useDistribution';
 
 // المكونات
 import { Header } from './components/Header';
+import { TagRings } from './components/Dashboard/TagRings';
 import { HoursSection } from './components/Hours/HoursSection';
 import { TimerBar } from './components/Hours/TimerBar';
 import { PrioritiesSection } from './components/Priorities/PrioritiesSection';
 import { TimerModal } from './components/Modals/TimerModal';
+import { StatsModal } from './components/Modals/StatsModal';
 import { Footer } from './components/Common/Footer';
 
 // الـ Types
@@ -18,7 +21,7 @@ export function App() {
   const { lang } = useLanguage();
   const { isDarkMode } = useTheme();
 
-  // 1. التايمر Hook
+  // 1. التايمر والإحصائيات Hooks
   const {
     isRunning,
     formattedElapsed,
@@ -27,16 +30,18 @@ export function App() {
     cancelTimer,
   } = useTimer();
 
-  // 2. حالات التحكم المعرفة للهيدر
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isCompact, setIsCompact] = useState<boolean>(false);
   const [saveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  // 3. حالات المودال والتايمر
+  const { dayStats, weekStats, monthStats, daysInMonth } = useDistribution(currentDate);
+
+  // 2. حالات المودالات (التايمر والإحصائيات)
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
   const [pendingTimeRange, setPendingTimeRange] = useState<{ start: Date; end: Date } | null>(null);
 
-  // 4. حالة الهدف الذهبي والأولويات
+  // 3. حالة الهدف الذهبي والأولويات
   const [goldenGoal, setGoldenGoal] = useState<{ text: string; done: boolean; tag: TagCode }>({
     text: '',
     done: false,
@@ -50,7 +55,7 @@ export function App() {
     q4: [{ id: '4', text: '', done: false, tag: '' }],
   });
 
-  // معالجة إيقاف التايمر وفتح التوصيف
+  // معالجة إيقاف التايمر
   const handleStopTimer = () => {
     const range = stopTimer();
     if (range) {
@@ -63,7 +68,7 @@ export function App() {
     console.log('Saved activity:', text, start, end);
   };
 
-  // دوال إدارة الأولويات والهدف الذهبي
+  // دوال الأولويات والهدف الذهبي
   const handleUpdateGoldenGoal = (updated: { text: string; done: boolean; tag: TagCode }) => {
     setGoldenGoal(updated);
   };
@@ -124,18 +129,29 @@ export function App() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* 1. تمرير الخواص المكتملة لـ Header بما فيها ringFilled و ringTotal */}
+      {/* 1. الهيدر الرئيسي */}
       <Header
         currentDate={currentDate}
         onPickDate={setCurrentDate}
         isCompact={isCompact}
         onToggleCompact={() => setIsCompact(!isCompact)}
         saveStatus={saveStatus}
-        ringFilled={0}
-        ringTotal={24}
+        ringFilled={dayStats.loggedTotal}
+        ringTotal={dayStats.totalSlots}
       />
 
-      {/* 2. قسم الساعات 24 ساعة + شريط التايمر (Phase 2 & 3) */}
+      {/* 2. حلقات التاقات (Phase 4) */}
+      {!isCompact && (
+        <div className="mb-3">
+          <TagRings
+            counts={dayStats.counts}
+            totalSlots={dayStats.totalSlots}
+            onClick={() => setIsStatsModalOpen(true)}
+          />
+        </div>
+      )}
+
+      {/* 3. قسم الساعات + التايمر (Phase 2 & 3) */}
       <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-3 mb-3 shadow-xs">
         <TimerBar
           isRunning={isRunning}
@@ -148,7 +164,7 @@ export function App() {
         <HoursSection />
       </section>
 
-      {/* 3. قسم الأولويات والهدف الذهبي (Phase 3) */}
+      {/* 4. قسم الأولويات والهدف الذهبي (Phase 3) */}
       <PrioritiesSection
         goldenGoal={goldenGoal}
         quadrants={quadrants}
@@ -161,15 +177,23 @@ export function App() {
         onRollover={handleRollover}
       />
 
-      {/* 4. الفوتر (Phase 2) */}
+      {/* 5. الفوتر */}
       <Footer />
 
-      {/* 5. مودال التايمر (Phase 3) */}
+      {/* 6. المودالات (التايمر + الإحصائيات) */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
         timeRange={pendingTimeRange}
         onSave={handleSaveTimerActivity}
+      />
+
+      <StatsModal
+        isOpen={isStatsModalOpen}
+        onClose={() => setIsStatsModalOpen(false)}
+        weekStats={weekStats}
+        monthStats={monthStats}
+        daysInMonth={daysInMonth}
       />
     </div>
   );
