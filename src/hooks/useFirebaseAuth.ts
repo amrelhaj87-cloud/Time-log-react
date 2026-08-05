@@ -1,93 +1,58 @@
 import { useState, useEffect } from 'react';
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  signOut, 
-  createUserWithEmailAndPassword, 
+import {
+  getAuth,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
   signInWithEmailAndPassword,
-  updateProfile,
-  sendPasswordResetEmail
+  createUserWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  User,
 } from 'firebase/auth';
-import type { User } from 'firebase/auth';
-import { auth, googleProvider } from '../lib/firebase';
+import { initializeApp, getApps } from 'firebase/app';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDwxMNlPwN1OzCEHr_9szajTOBvZIBKkfQ",
+  authDomain: "time-log-ad714.firebaseapp.com",
+  projectId: "time-log-ad714",
+  storageBucket: "time-log-ad714.firebasestorage.app",
+  messagingSenderId: "334822322788",
+  appId: "1:334822322788:web:e4522aca1292420404e571",
+};
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+export const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 export function useFirebaseAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-      setUser(currentUser);
+    getRedirectResult(auth)
+      .then((res) => {
+        if (res?.user) setUser(res.user);
+      })
+      .catch((err) => console.error("Redirect login error:", err));
+
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
-  const loginWithGoogle = async () => {
-    setError(null);
-    try {
-      const res = await signInWithPopup(auth, googleProvider);
-      return res.user;
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    }
+  const loginWithGoogle = () => {
+    signInWithRedirect(auth, googleProvider);
   };
 
-  const loginWithEmail = async (email: string, pass: string) => {
-    setError(null);
-    try {
-      const res = await signInWithEmailAndPassword(auth, email, pass);
-      return res.user;
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    }
-  };
+  const loginWithEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e, p);
+  const signUpWithEmail = (e: string, p: string) => createUserWithEmailAndPassword(auth, e, p);
+  const logout = () => signOut(auth);
+  const resetPassword = (e: string) => sendPasswordResetEmail(auth, e);
 
-  const signUpWithEmail = async (email: string, pass: string, name: string) => {
-    setError(null);
-    try {
-      const res = await createUserWithEmailAndPassword(auth, email, pass);
-      if (name) {
-        await updateProfile(res.user, { displayName: name });
-      }
-      return res.user;
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  const logout = async () => {
-    setError(null);
-    try {
-      await signOut(auth);
-      setUser(null);
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const resetPassword = async (email: string) => {
-    setError(null);
-    try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  return {
-    user,
-    loading,
-    error,
-    loginWithGoogle,
-    loginWithEmail,
-    signUpWithEmail,
-    logout,
-    resetPassword,
-  };
+  return { user, loading, loginWithGoogle, loginWithEmail, signUpWithEmail, logout, resetPassword };
 }
