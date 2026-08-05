@@ -3,7 +3,7 @@ import { useLanguage } from './context/LanguageContext';
 import { useTheme } from './context/ThemeContext';
 import { useTimer } from './hooks/useTimer';
 
-// المكونات - استخدام Named Imports لمنع خطأ TS2613
+// المكونات - Named Imports
 import { Header } from './components/Header';
 import { HoursSection } from './components/Hours/HoursSection';
 import { TimerBar } from './components/Hours/TimerBar';
@@ -27,15 +27,11 @@ export function App() {
     cancelTimer,
   } = useTimer();
 
-  // 2. حالات العرض والتحكم (Compact / Expanded)
-  const [isCompact, setIsCompact] = useState<boolean>(false);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  
-  // 3. حالات المودال والتايمر
+  // 2. حالات المودال والتايمر
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [pendingTimeRange, setPendingTimeRange] = useState<{ start: Date; end: Date } | null>(null);
 
-  // 4. حالة الهدف الذهبي والأولويات
+  // 3. حالة الهدف الذهبي والأولويات
   const [goldenGoal, setGoldenGoal] = useState<{ text: string; done: boolean; tag: TagCode }>({
     text: '',
     done: false,
@@ -123,13 +119,8 @@ export function App() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* 1. الهيدر الرئيسي (Phase 1) */}
-      <Header
-        currentDate={currentDate}
-        onDateChange={setCurrentDate}
-        isCompact={isCompact}
-        onToggleCompact={() => setIsCompact(!isCompact)}
-      />
+      {/* 1. الهيدر الرئيسي (Phase 1) - بدون تمرير الخواص غير المعرفة */}
+      <Header />
 
       {/* 2. قسم الساعات 24 ساعة + شريط التايمر (Phase 2 & 3) */}
       <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-3 mb-3 shadow-xs">
