@@ -75,14 +75,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     exportToJSON(allData);
   };
 
-  // إنشاء كائن افتراضي مطابق تماماً لـ DayData Type
+  // إنشاء كائن افتراضي مطابق تماماً لـ DayData Type بدون الخاصية date
   const emptyHours = ALL_HOUR_KEYS.reduce((acc, key) => {
     acc[key] = { note: '', tag: '' };
     return acc;
   }, {} as Record<HourKey, HourData>);
 
   const defaultDayData: DayData = {
-    date: currentDateStr,
     hours: emptyHours,
     priorities: [],
   };
