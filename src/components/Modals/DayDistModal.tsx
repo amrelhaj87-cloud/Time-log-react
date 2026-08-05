@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import type { DistributionCounts } from '../../types';
+import type { Distribution } from '../../types';
 
 interface DayDistModalProps {
   isOpen: boolean;
@@ -8,7 +8,7 @@ interface DayDistModalProps {
   dateStr: string;
   loggedTotal: number;
   totalSlots: number;
-  tagCounts: DistributionCounts;
+  tagCounts: Distribution | Record<string, number>;
 }
 
 const TAG_COLORS: Record<string, string> = {
@@ -33,16 +33,18 @@ export const DayDistModal: React.FC<DayDistModalProps> = ({
   const { lang } = useLanguage();
   if (!isOpen) return null;
 
+  const counts = (tagCounts || {}) as Record<string, number>;
   const emptyCount = Math.max(0, totalSlots - loggedTotal);
+
   const categories = [
     { key: 'empty', labelAr: 'بدون تسجيل', labelEn: 'No Log', count: emptyCount },
-    { key: 'unassigned', labelAr: 'بدون بند', labelEn: 'Unassigned', count: (tagCounts as any).unassigned || 0 },
-    { key: 'SL', labelAr: 'SL', labelEn: 'SL', count: tagCounts.SL || 0 },
-    { key: 'SC', labelAr: 'SC', labelEn: 'SC', count: tagCounts.SC || 0 },
-    { key: 'S', labelAr: 'S', labelEn: 'S', count: tagCounts.S || 0 },
-    { key: 'R', labelAr: 'R', labelEn: 'R', count: tagCounts.R || 0 },
-    { key: 'V', labelAr: 'V', labelEn: 'V', count: tagCounts.V || 0 },
-    { key: 'E', labelAr: 'E', labelEn: 'E', count: tagCounts.E || 0 },
+    { key: 'unassigned', labelAr: 'بدون بند', labelEn: 'Unassigned', count: counts.unassigned || 0 },
+    { key: 'SL', labelAr: 'SL', labelEn: 'SL', count: counts.SL || 0 },
+    { key: 'SC', labelAr: 'SC', labelEn: 'SC', count: counts.SC || 0 },
+    { key: 'S', labelAr: 'S', labelEn: 'S', count: counts.S || 0 },
+    { key: 'R', labelAr: 'R', labelEn: 'R', count: counts.R || 0 },
+    { key: 'V', labelAr: 'V', labelEn: 'V', count: counts.V || 0 },
+    { key: 'E', labelAr: 'E', labelEn: 'E', count: counts.E || 0 },
   ];
 
   return (
