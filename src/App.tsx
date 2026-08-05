@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from './context/LanguageContext';
 import { useTheme } from './context/ThemeContext';
 import { useTimer } from './hooks/useTimer';
@@ -9,6 +9,7 @@ import { useFirebaseSync } from './hooks/useFirebaseSync';
 // المكونات
 import { ErrorBoundary } from './components/Common/ErrorBoundary';
 import { Header } from './components/Header';
+import { BirthdayBanner } from './components/Common/BirthdayBanner';
 import { WeekStrip } from './components/Dashboard/WeekStrip';
 import { TagRings } from './components/Dashboard/TagRings';
 import { HoursSection } from './components/Hours/HoursSection';
@@ -79,6 +80,26 @@ function AppContent() {
     q3: [{ id: '3', text: '', done: false, tag: '' }],
     q4: [{ id: '4', text: '', done: false, tag: '' }],
   });
+
+  // المراجع للتركيز والطي التلقائي (Smart Auto-Focus & Scroll)
+  const goldenGoalRef = useRef<HTMLDivElement>(null);
+  const currentHourRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // التحقق مما إذا كان هناك أي أولويات أو هدف ذهبي مكتوب
+    const hasGoldenGoal = goldenGoal.text.trim() !== '';
+    const hasPriorities = Object.values(quadrants).some((q) =>
+      q.some((item) => item.text.trim() !== '')
+    );
+
+    if (!hasGoldenGoal && !hasPriorities) {
+      // الانتقال للهدف الذهبي مباشرة إذا كانت الأولويات فارغة
+      goldenGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      // الانتقال للساعة الحالية إذا وُجدت أهداف/أولويات
+      currentHourRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
 
   // مزامنة البيانات تلقائياً مع السحاب
   const dateStr = currentDate.toISOString().split('T')[0];
@@ -166,6 +187,9 @@ function AppContent() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-2 sm:p-4 min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark-mode' : ''}`}>
+      {/* 0. شريط تنبيه عيد الميلاد التفاعلي */}
+      <BirthdayBanner />
+
       {/* 1. الهيدر الرئيسي المحدث */}
       <Header
         currentDate={currentDate}
@@ -221,21 +245,25 @@ function AppContent() {
           onCancel={cancelTimer}
         />
 
-        <HoursSection />
+        <div ref={currentHourRef}>
+          <HoursSection />
+        </div>
       </section>
 
       {/* 5. قسم الأولويات والهدف الذهبي */}
-      <PrioritiesSection
-        goldenGoal={goldenGoal}
-        quadrants={quadrants}
-        onUpdateGoldenGoal={handleUpdateGoldenGoal}
-        onClearGoldenGoal={handleClearGoldenGoal}
-        onChangePriority={handleChangePriority}
-        onAddPriority={handleAddPriority}
-        onDeletePriority={handleDeletePriority}
-        onPromoteToGolden={handlePromoteToGolden}
-        onRollover={handleRollover}
-      />
+      <div ref={goldenGoalRef}>
+        <PrioritiesSection
+          goldenGoal={goldenGoal}
+          quadrants={quadrants}
+          onUpdateGoldenGoal={handleUpdateGoldenGoal}
+          onClearGoldenGoal={handleClearGoldenGoal}
+          onChangePriority={handleChangePriority}
+          onAddPriority={handleAddPriority}
+          onDeletePriority={handleDeletePriority}
+          onPromoteToGolden={handlePromoteToGolden}
+          onRollover={handleRollover}
+        />
+      </div>
 
       {/* 6. دليل التصنيفات الملون السفلي */}
       <TagLegend />
