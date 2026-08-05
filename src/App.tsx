@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from './context/LanguageContext';
 import { useTheme } from './context/ThemeContext';
 import { useTimer } from './hooks/useTimer';
 import { useDistribution } from './hooks/useDistribution';
+import { useFirebaseAuth } from './hooks/useFirebaseAuth';
+import { useFirebaseSync } from './hooks/useFirebaseSync';
 
 // المكونات
 import { Header } from './components/Header';
@@ -12,6 +14,7 @@ import { TimerBar } from './components/Hours/TimerBar';
 import { PrioritiesSection } from './components/Priorities/PrioritiesSection';
 import { TimerModal } from './components/Modals/TimerModal';
 import { StatsModal } from './components/Modals/StatsModal';
+import { AuthModal } from './components/Modals/AuthModal';
 import { Footer } from './components/Common/Footer';
 
 // الـ Types
@@ -21,7 +24,19 @@ export function App() {
   const { lang } = useLanguage();
   const { isDarkMode } = useTheme();
 
-  // 1. التايمر والإحصائيات Hooks
+  // 1. حسابات Firebase والمزامنة (Phase 5)
+  const {
+    user,
+    loginWithGoogle,
+    loginWithEmail,
+    signUpWithEmail,
+    logout,
+    resetPassword,
+  } = useFirebaseAuth();
+
+  const { syncDayToCloud } = useFirebaseSync(user);
+
+  // 2. التايمر والإحصائيات Hooks
   const {
     isRunning,
     formattedElapsed,
@@ -32,16 +47,17 @@ export function App() {
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isCompact, setIsCompact] = useState<boolean>(false);
-  const [saveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   const { dayStats, weekStats, monthStats, daysInMonth } = useDistribution(currentDate);
 
-  // 2. حالات المودالات (التايمر والإحصائيات)
+  // 3. حالات المودالات (التايمر + الإحصائيات + Auth)
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingTimeRange, setPendingTimeRange] = useState<{ start: Date; end: Date } | null>(null);
 
-  // 3. حالة الهدف الذهبي والأولويات
+  // 4. حالة الهدف الذهبي والأولويات
   const [goldenGoal, setGoldenGoal] = useState<{ text: string; done: boolean; tag: TagCode }>({
     text: '',
     done: false,
@@ -54,6 +70,18 @@ export function App() {
     q3: [{ id: '3', text: '', done: false, tag: '' }],
     q4: [{ id: '4', text: '', done: false, tag: '' }],
   });
+
+  // مزامنة البيانات تلقائياً مع السحاب عند تعديل أي شيء
+  const dateStr = currentDate.toISOString().split('T')[0];
+  useEffect(() => {
+    if (user) {
+      setSaveStatus('saving');
+      const payload = { goldenGoal, quadrants };
+      syncDayToCloud(dateStr, payload)
+        .then(() => setSaveStatus('saved'))
+        .catch(() => setSaveStatus('error'));
+    }
+  }, [goldenGoal, quadrants, currentDate, user, syncDayToCloud, dateStr]);
 
   // معالجة إيقاف التايمر
   const handleStopTimer = () => {
@@ -129,7 +157,33 @@ export function App() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* 1. الهيدر الرئيسي */}
+      {/* 1. الشريط العلوى للتحكم بالحساب وتدقيق تسجيل الدخول */}
+      <div className="flex justify-between items-center mb-2 px-1 text-xs">
+        {user ? (
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="font-bold text-[var(--teal-dark)]">
+              {user.displayName || user.email}
+            </span>
+            <button
+              onClick={logout}
+              className="text-[10px] text-[var(--rose)] hover:underline cursor-pointer"
+            >
+              ({lang === 'ar' ? 'خروج' : 'Logout'})
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-[var(--teal-tint)] border border-[var(--teal)] text-[var(--teal-dark)] font-bold text-[11px] hover:bg-[var(--teal)] hover:text-white transition-colors cursor-pointer"
+          >
+            <span>🔑</span>
+            <span>{lang === 'ar' ? 'تسجيل الدخول للمزامنة' : 'Sign in to sync'}</span>
+          </button>
+        )}
+      </div>
+
+      {/* 2. الهيدر الرئيسي */}
       <Header
         currentDate={currentDate}
         onPickDate={setCurrentDate}
@@ -140,7 +194,7 @@ export function App() {
         ringTotal={dayStats.totalSlots}
       />
 
-      {/* 2. حلقات التاقات (Phase 4) */}
+      {/* 3. حلقات التاقات (Phase 4) */}
       {!isCompact && (
         <div className="mb-3">
           <TagRings
@@ -151,7 +205,7 @@ export function App() {
         </div>
       )}
 
-      {/* 3. قسم الساعات + التايمر (Phase 2 & 3) */}
+      {/* 4. قسم الساعات + التايمر (Phase 2 & 3) */}
       <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-3 mb-3 shadow-xs">
         <TimerBar
           isRunning={isRunning}
@@ -164,7 +218,7 @@ export function App() {
         <HoursSection />
       </section>
 
-      {/* 4. قسم الأولويات والهدف الذهبي (Phase 3) */}
+      {/* 5. قسم الأولويات والهدف الذهبي (Phase 3) */}
       <PrioritiesSection
         goldenGoal={goldenGoal}
         quadrants={quadrants}
@@ -177,10 +231,10 @@ export function App() {
         onRollover={handleRollover}
       />
 
-      {/* 5. الفوتر */}
+      {/* 6. الفوتر */}
       <Footer />
 
-      {/* 6. المودالات (التايمر + الإحصائيات) */}
+      {/* 7. المودالات (التايمر + الإحصائيات + Auth) */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
@@ -194,6 +248,15 @@ export function App() {
         weekStats={weekStats}
         monthStats={monthStats}
         daysInMonth={daysInMonth}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onGoogleLogin={loginWithGoogle}
+        onEmailLogin={loginWithEmail}
+        onEmailSignUp={signUpWithEmail}
+        onResetPassword={resetPassword}
       />
     </div>
   );
