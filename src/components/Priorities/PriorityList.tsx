@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { TagCode, DayPriority } from '../../types';
-import { TagPickerPopover } from '../Hours/TagPickerPopover';
+import type { TagCode, DayPriority } from '../../types';
 
 interface PriorityListProps {
   quadrants: Record<string, DayPriority[]>;
@@ -17,6 +16,8 @@ const QUAD_CONFIGS = [
   { key: 'q3', cls: 'bg-[var(--blue-tint)]', title: { ar: '⚡ عاجل وغير مهم (مربع الخداع)', en: '⚡ Urgent & Not Important' } },
   { key: 'q4', cls: 'bg-[var(--sage-tint)]', title: { ar: '🌱 غير عاجل وغير مهم (مربع الضياع)', en: '🌱 Not Urgent & Not Important' } },
 ];
+
+const TAG_OPTIONS: TagCode[] = ['E', 'V', 'R', 'S', 'SC', 'SL', ''];
 
 export const PriorityList: React.FC<PriorityListProps> = ({
   quadrants,
@@ -59,18 +60,25 @@ export const PriorityList: React.FC<PriorityListProps> = ({
                     className="flex-1 bg-transparent border-b border-black/10 text-xs p-0.5 text-[var(--ink)] outline-none focus:border-[var(--ink)]"
                   />
 
-                  <TagPickerPopover
-                    small
-                    selectedTag={item.tag as TagCode}
-                    onSelectTag={(code) => onChangeItem(q.key, idx, { ...item, tag: code })}
-                  />
+                  <select
+                    value={item.tag || ''}
+                    onChange={(e) => onChangeItem(q.key, idx, { ...item, tag: e.target.value as TagCode })}
+                    className="text-[10px] font-bold p-0.5 rounded border border-[var(--line)] bg-[var(--card)] text-[var(--ink)]"
+                  >
+                    <option value="">—</option>
+                    {TAG_OPTIONS.filter(Boolean).map((tag) => (
+                      <option key={tag} value={tag}>
+                        {tag}
+                      </option>
+                    ))}
+                  </select>
 
                   {showPromote && (
                     <button
                       type="button"
                       onClick={() => onPromoteToGolden(q.key, idx)}
                       title={lang === 'ar' ? 'نقل للهدف الذهبي' : 'Promote to Golden Goal'}
-                      className="text-xs text-[var(--amber)] hover:scale-110 transition-transform"
+                      className="text-xs text-[var(--amber)] hover:scale-110 transition-transform cursor-pointer"
                     >
                       🎯
                     </button>
@@ -80,7 +88,7 @@ export const PriorityList: React.FC<PriorityListProps> = ({
                     <button
                       type="button"
                       onClick={() => onDeleteItem(q.key, idx)}
-                      className="text-[var(--rose)] text-sm px-1 opacity-70 hover:opacity-100"
+                      className="text-[var(--rose)] text-sm px-1 opacity-70 hover:opacity-100 cursor-pointer"
                     >
                       &times;
                     </button>
@@ -92,7 +100,7 @@ export const PriorityList: React.FC<PriorityListProps> = ({
             <button
               type="button"
               onClick={() => onAddItem(q.key)}
-              className="mt-2 w-full py-1 rounded-lg border border-dashed border-[var(--line)] bg-white/30 text-xs font-semibold text-[var(--ink-soft)] hover:bg-[var(--card)] transition-colors"
+              className="mt-2 w-full py-1 rounded-lg border border-dashed border-[var(--line)] bg-white/30 text-xs font-semibold text-[var(--ink-soft)] hover:bg-[var(--card)] transition-colors cursor-pointer"
             >
               {lang === 'ar' ? '+ إضافة أولوية' : '+ Add Priority'}
             </button>

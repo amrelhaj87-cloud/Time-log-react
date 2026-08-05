@@ -5,7 +5,6 @@ export function useTimer() {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
-  // استرجاع المؤقت إذا كان شغال مسبقاً من localStorage
   useEffect(() => {
     const savedStart = localStorage.getItem('activeTimerStart');
     if (savedStart) {
@@ -16,9 +15,8 @@ export function useTimer() {
     }
   }, []);
 
-  // تحديث الثواني المنقضية كل ثانية
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval>;
     if (isRunning && startTime) {
       intervalId = setInterval(() => {
         setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));

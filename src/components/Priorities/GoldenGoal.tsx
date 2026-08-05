@@ -1,13 +1,14 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { TagCode } from '../../types';
-import { TagPickerPopover } from '../Hours/TagPickerPopover';
+import type { TagCode } from '../../types';
 
 interface GoldenGoalProps {
   goal: { text: string; done: boolean; tag: TagCode };
   onChange: (updated: { text: string; done: boolean; tag: TagCode }) => void;
   onClear: () => void;
 }
+
+const TAG_OPTIONS: TagCode[] = ['E', 'V', 'R', 'S', 'SC', 'SL', ''];
 
 export const GoldenGoal: React.FC<GoldenGoalProps> = ({ goal, onChange, onClear }) => {
   const { lang } = useLanguage();
@@ -38,17 +39,24 @@ export const GoldenGoal: React.FC<GoldenGoalProps> = ({ goal, onChange, onClear 
           className="flex-1 bg-transparent border-b-2 border-[var(--amber)]/30 text-xs font-bold text-[var(--ink)] p-1 outline-none focus:border-[var(--amber)]"
         />
 
-        <TagPickerPopover
-          small
-          selectedTag={goal.tag}
-          onSelectTag={(code) => onChange({ ...goal, tag: code })}
-        />
+        <select
+          value={goal.tag || ''}
+          onChange={(e) => onChange({ ...goal, tag: e.target.value as TagCode })}
+          className="text-[10px] font-bold p-1 rounded-md border border-[var(--line)] bg-[var(--card)] text-[var(--ink)]"
+        >
+          <option value="">—</option>
+          {TAG_OPTIONS.filter(Boolean).map((tag) => (
+            <option key={tag} value={tag}>
+              {tag}
+            </option>
+          ))}
+        </select>
 
         <button
           type="button"
           onClick={onClear}
           title={lang === 'ar' ? 'حذف الهدف الذهبي' : 'Delete Golden Goal'}
-          className="text-[var(--rose)] text-sm px-1 hover:opacity-80"
+          className="text-[var(--rose)] text-sm px-1 hover:opacity-80 cursor-pointer"
         >
           ✕
         </button>

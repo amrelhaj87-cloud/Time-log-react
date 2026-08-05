@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { GoldenGoal } from './GoldenGoal';
 import { PriorityList } from './PriorityList';
-import { DayPriority, TagCode } from '../../types';
+import type { DayPriority, TagCode } from '../../types';
 
 interface PrioritiesSectionProps {
   goldenGoal: { text: string; done: boolean; tag: TagCode };
@@ -29,7 +29,6 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
 }) => {
   const { lang } = useLanguage();
 
-  // حساب نسبة المنجز من الأولويات والهدف الذهبي
   let total = 0;
   let done = 0;
   if (goldenGoal.text.trim()) {
@@ -52,14 +51,12 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
         {lang === 'ar' ? 'الأولويات' : 'Priorities'}
       </h2>
 
-      {/* Golden Goal */}
       <GoldenGoal
         goal={goldenGoal}
         onChange={onUpdateGoldenGoal}
         onClear={onClearGoldenGoal}
       />
 
-      {/* Progress Bar */}
       <div className="bg-[var(--card)] border border-[var(--line)] rounded-xl p-2 mb-3">
         <div className="flex justify-between text-[10px] font-bold text-[var(--teal-dark)] mb-1">
           <span>
@@ -77,7 +74,6 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
         </div>
       </div>
 
-      {/* Quadrants Grid */}
       <PriorityList
         quadrants={quadrants}
         onChangeItem={onChangePriority}
@@ -86,12 +82,11 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
         onPromoteToGolden={onPromoteToGolden}
       />
 
-      {/* Rollover Button */}
       <div className="flex justify-center mt-2">
         <button
           type="button"
           onClick={onRollover}
-          className="py-1.5 px-4 rounded-xl text-xs font-bold bg-[var(--teal-tint)] border border-[var(--teal)] text-[var(--teal-dark)] hover:bg-[var(--teal)] hover:text-white transition-all flex items-center gap-1.5 shadow-xs"
+          className="py-1.5 px-4 rounded-xl text-xs font-bold bg-[var(--teal-tint)] border border-[var(--teal)] text-[var(--teal-dark)] hover:bg-[var(--teal)] hover:text-white transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
         >
           <span>➡️</span>
           <span>

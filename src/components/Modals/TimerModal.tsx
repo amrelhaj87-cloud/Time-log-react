@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ModalOverlay } from '../Common/ModalOverlay';
 import { useLanguage } from '../../context/LanguageContext';
 
 interface TimerModalProps {
@@ -38,14 +37,14 @@ export const TimerModal: React.FC<TimerModalProps> = ({
   };
 
   return (
-    <ModalOverlay isOpen={isOpen} onClose={onClose}>
-      <div className="max-w-[420px] w-full p-4 bg-[var(--card)] rounded-2xl border border-[var(--line)] shadow-xl dir-rtl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs dir-rtl">
+      <div className="max-w-[420px] w-full p-4 bg-[var(--card)] rounded-2xl border border-[var(--line)] shadow-xl">
         <div className="flex items-center justify-between pb-2 mb-2 border-b border-[var(--line)]">
           <h3 className="font-bold text-lg text-[var(--teal-dark)] flex items-center gap-2">
             <span>⏱️</span>
             <span>{lang === 'ar' ? 'اكتب اللي حصل' : 'What happened?'}</span>
           </h3>
-          <button onClick={onClose} className="text-xl text-[var(--ink-soft)] hover:text-[var(--rose)]">
+          <button onClick={onClose} className="text-xl text-[var(--ink-soft)] hover:text-[var(--rose)] cursor-pointer">
             &times;
           </button>
         </div>
@@ -70,12 +69,12 @@ export const TimerModal: React.FC<TimerModalProps> = ({
           <button
             type="button"
             onClick={handleSave}
-            className="py-1.5 px-4 rounded-xl bg-[var(--teal)] text-white text-xs font-bold hover:bg-[var(--teal-dark)] transition-colors"
+            className="py-1.5 px-4 rounded-xl bg-[var(--teal)] text-white text-xs font-bold hover:bg-[var(--teal-dark)] transition-colors cursor-pointer"
           >
             {lang === 'ar' ? 'حفظ في الساعات' : 'Save to hours'}
           </button>
         </div>
       </div>
-    </ModalOverlay>
+    </div>
   );
 };
