@@ -15,6 +15,7 @@ import { PrioritiesSection } from './components/Priorities/PrioritiesSection';
 import { TimerModal } from './components/Modals/TimerModal';
 import { StatsModal } from './components/Modals/StatsModal';
 import { AuthModal } from './components/Modals/AuthModal';
+import { ExportModal } from './components/Modals/ExportModal';
 import { Footer } from './components/Common/Footer';
 
 // الـ Types
@@ -51,10 +52,11 @@ export function App() {
 
   const { dayStats, weekStats, monthStats, daysInMonth } = useDistribution(currentDate);
 
-  // 3. حالات المودالات (التايمر + الإحصائيات + Auth)
+  // 3. حالات المودالات (التايمر + الإحصائيات + Auth + Export)
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [pendingTimeRange, setPendingTimeRange] = useState<{ start: Date; end: Date } | null>(null);
 
   // 4. حالة الهدف الذهبي والأولويات
@@ -157,7 +159,7 @@ export function App() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* 1. الشريط العلوى للتحكم بالحساب وتدقيق تسجيل الدخول */}
+      {/* 1. الشريط العلوي للحسابات والأدوات (Auth + Export) */}
       <div className="flex justify-between items-center mb-2 px-1 text-xs">
         {user ? (
           <div className="flex items-center gap-2">
@@ -178,9 +180,18 @@ export function App() {
             className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-[var(--teal-tint)] border border-[var(--teal)] text-[var(--teal-dark)] font-bold text-[11px] hover:bg-[var(--teal)] hover:text-white transition-colors cursor-pointer"
           >
             <span>🔑</span>
-            <span>{lang === 'ar' ? 'تسجيل الدخول للمزامنة' : 'Sign in to sync'}</span>
+            <span>{lang === 'ar' ? 'تسجيل الدخول' : 'Sign in'}</span>
           </button>
         )}
+
+        {/* زر التصدير والتحليل الذكي (Phase 6) */}
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="flex items-center gap-1 py-1 px-2.5 rounded-lg bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] font-bold text-[11px] hover:border-[var(--teal)] transition-colors cursor-pointer"
+        >
+          <span>✨</span>
+          <span>{lang === 'ar' ? 'التحليل والتصدير' : 'AI & Export'}</span>
+        </button>
       </div>
 
       {/* 2. الهيدر الرئيسي */}
@@ -234,7 +245,7 @@ export function App() {
       {/* 6. الفوتر */}
       <Footer />
 
-      {/* 7. المودالات (التايمر + الإحصائيات + Auth) */}
+      {/* 7. المودالات الكاملة (التايمر + الإحصائيات + Auth + Export) */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
@@ -257,6 +268,13 @@ export function App() {
         onEmailLogin={loginWithEmail}
         onEmailSignUp={signUpWithEmail}
         onResetPassword={resetPassword}
+      />
+
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        currentDateStr={dateStr}
+        currentDayData={undefined}
       />
     </div>
   );
