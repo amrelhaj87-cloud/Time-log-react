@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { exportToJSON, exportToCSV, printReport } from '../../lib/exportUtils';
-import type { DayData } from '../../types';
+import type { DayData, HourKey, HourData } from '../../types';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -9,6 +9,12 @@ interface ExportModalProps {
   currentDateStr: string;
   currentDayData?: DayData;
 }
+
+const ALL_HOUR_KEYS: HourKey[] = [
+  '5am', '6am', '7am', '8am', '9am', '10am', '11am', '12pm',
+  '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm',
+  '9pm', '10pm', '11pm', '12am', '1am', '2am', '3am', '4am'
+];
 
 export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
@@ -69,14 +75,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     exportToJSON(allData);
   };
 
+  // إنشاء كائن افتراضي مطابق تماماً لـ DayData Type
+  const emptyHours = ALL_HOUR_KEYS.reduce((acc, key) => {
+    acc[key] = { note: '', tag: '' };
+    return acc;
+  }, {} as Record<HourKey, HourData>);
+
   const defaultDayData: DayData = {
-    hours: {},
-    priorities: {
-      q1: [],
-      q2: [],
-      q3: [],
-      q4: [],
-    },
+    date: currentDateStr,
+    hours: emptyHours,
+    priorities: [],
   };
 
   return (
