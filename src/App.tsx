@@ -7,6 +7,7 @@ import { useFirebaseAuth } from './hooks/useFirebaseAuth';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 
 // المكونات
+import { ErrorBoundary } from './components/Common/ErrorBoundary';
 import { Header } from './components/Header';
 import { TagRings } from './components/Dashboard/TagRings';
 import { HoursSection } from './components/Hours/HoursSection';
@@ -22,7 +23,7 @@ import { Footer } from './components/Common/Footer';
 // الـ Types
 import type { DayPriority, TagCode } from './types';
 
-export function App() {
+function AppContent() {
   const { lang } = useLanguage();
   const { isDarkMode } = useTheme();
 
@@ -160,18 +161,18 @@ export function App() {
   };
 
   return (
-    <div className={`wrap max-w-[860px] mx-auto p-3 min-h-screen ${isDarkMode ? 'dark-mode' : ''}`}>
+    <div className={`wrap max-w-[860px] mx-auto p-2 sm:p-4 min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark-mode' : ''}`}>
       {/* 1. الشريط العلوي للحسابات والأدوات الإضافية (Auth + Export + Settings) */}
-      <div className="flex justify-between items-center mb-2 px-1 text-xs">
+      <div className="flex justify-between items-center mb-2 px-1 text-xs gap-2">
         {user ? (
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="font-bold text-[var(--teal-dark)]">
+          <div className="flex items-center gap-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <span className="font-bold text-[var(--teal-dark)] truncate">
               {user.displayName || user.email}
             </span>
             <button
               onClick={logout}
-              className="text-[10px] text-[var(--rose)] hover:underline cursor-pointer"
+              className="text-[10px] text-[var(--rose)] hover:underline cursor-pointer shrink-0"
             >
               ({lang === 'ar' ? 'خروج' : 'Logout'})
             </button>
@@ -186,17 +187,15 @@ export function App() {
           </button>
         )}
 
-        <div className="flex items-center gap-1.5">
-          {/* زر التصدير والتحليل الذكي (Phase 6) */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setIsExportModalOpen(true)}
             className="flex items-center gap-1 py-1 px-2.5 rounded-lg bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] font-bold text-[11px] hover:border-[var(--teal)] transition-colors cursor-pointer"
           >
             <span>✨</span>
-            <span>{lang === 'ar' ? 'التحليل والتصدير' : 'AI & Export'}</span>
+            <span className="hidden sm:inline">{lang === 'ar' ? 'التحليل والتصدير' : 'AI & Export'}</span>
           </button>
 
-          {/* زر الإعدادات وحاسبة العمر (Phase 7) */}
           <button
             onClick={() => setIsSettingsModalOpen(true)}
             className="flex items-center gap-1 py-1 px-2.5 rounded-lg bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] font-bold text-[11px] hover:border-[var(--teal)] transition-colors cursor-pointer"
@@ -230,7 +229,7 @@ export function App() {
       )}
 
       {/* 4. قسم الساعات + التايمر (Phase 2 & 3) */}
-      <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-3 mb-3 shadow-xs">
+      <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-2.5 sm:p-3 mb-3 shadow-xs">
         <TimerBar
           isRunning={isRunning}
           formattedElapsed={formattedElapsed}
@@ -258,7 +257,7 @@ export function App() {
       {/* 6. الفوتر */}
       <Footer />
 
-      {/* 7. المودالات الكاملة (التايمر + الإحصائيات + Auth + Export + Settings) */}
+      {/* 7. المودالات الكاملة */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
@@ -295,6 +294,14 @@ export function App() {
         onClose={() => setIsSettingsModalOpen(false)}
       />
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   );
 }
 
