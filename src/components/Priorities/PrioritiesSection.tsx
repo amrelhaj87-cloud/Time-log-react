@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { TagPickerMenu } from '../Common/TagPickerMenu';
 import type { DayPriority, TagCode } from '../../types';
 
 interface PrioritiesSectionProps {
@@ -38,6 +39,14 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
 }) => {
   const { lang } = useLanguage();
 
+  // حالة التحكم بالمنيو المنبثق للأولويات والهدف الذهبي
+  const [activePickerTarget, setActivePickerTarget] = useState<{
+    type: 'golden' | 'priority';
+    quadKey?: string;
+    index?: number;
+    currentTag: TagCode;
+  } | null>(null);
+
   // حساب الأعداد والنسبة المئوية لإنجاز الأولويات
   const allPriorities = Object.values(quadrants).flat().filter((p) => p.text.trim() !== '');
   const totalPrioritiesCount = allPriorities.length + (goldenGoal.text.trim() !== '' ? 1 : 0);
@@ -47,10 +56,16 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
   const priorityPct =
     totalPrioritiesCount > 0 ? Math.round((completedCount / totalPrioritiesCount) * 100) : 0;
 
-  const cycleTag = (currentTag: TagCode) => {
-    const tags: TagCode[] = ['', 'E', 'V', 'R', 'S', 'SC', 'SL'];
-    const idx = tags.indexOf(currentTag || '');
-    return tags[(idx + 1) % tags.length];
+  const handleSelectTag = (tag: TagCode) => {
+    if (!activePickerTarget) return;
+
+    if (activePickerTarget.type === 'golden') {
+      onUpdateGoldenGoal({ ...goldenGoal, tag });
+    } else if (activePickerTarget.type === 'priority' && activePickerTarget.quadKey !== undefined && activePickerTarget.index !== undefined) {
+      const item = quadrants[activePickerTarget.quadKey][activePickerTarget.index];
+      onChangePriority(activePickerTarget.quadKey, activePickerTarget.index, { ...item, tag });
+    }
+    setActivePickerTarget(null);
   };
 
   return (
@@ -86,10 +101,10 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
             className="flex-1 bg-transparent border-b border-[var(--amber)]/40 text-xs font-bold text-[var(--ink)] py-1 outline-none"
           />
 
-          {/* زر التاق الموحد */}
+          {/* زر التاق المنبثق للهدف الذهبي */}
           <button
             type="button"
-            onClick={() => onUpdateGoldenGoal({ ...goldenGoal, tag: cycleTag(goldenGoal.tag) })}
+            onClick={() => setActivePickerTarget({ type: 'golden', currentTag: goldenGoal.tag })}
             style={{
               borderColor: goldenGoal.tag ? TAG_COLORS[goldenGoal.tag] : 'var(--line)',
               color: goldenGoal.tag ? TAG_COLORS[goldenGoal.tag] : 'var(--ink-faint)',
@@ -163,13 +178,15 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
                       }`}
                     />
 
-                    {/* زر التاق الموحد للأولويات */}
+                    {/* زر التاق المنبثق للأولويات */}
                     <button
                       type="button"
                       onClick={() =>
-                        onChangePriority(q.key, idx, {
-                          ...item,
-                          tag: cycleTag((item.tag || '') as TagCode),
+                        setActivePickerTarget({
+                          type: 'priority',
+                          quadKey: q.key,
+                          index: idx,
+                          currentTag: (item.tag || '') as TagCode,
                         })
                       }
                       style={{
@@ -181,7 +198,6 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
                       {item.tag || '—'}
                     </button>
 
-                    {/* زر الترقية للهدف الذهبي */}
                     {(q.key === 'q1' || q.key === 'q2') && (
                       <button
                         type="button"
@@ -229,6 +245,14 @@ export const PrioritiesSection: React.FC<PrioritiesSectionProps> = ({
           <span>{lang === 'ar' ? 'ترحيل المهام غير المنجزة للغد' : 'Rollover Unfinished Tasks'}</span>
         </button>
       </div>
+
+      {/* المنيو المنبثق لاختيار التصنيف في الأولويات */}
+      <TagPickerMenu
+        isOpen={!!activePickerTarget}
+        onClose={() => setActivePickerTarget(null)}
+        onSelect={handleSelectTag}
+        currentTag={activePickerTarget?.currentTag}
+      />
     </section>
   );
 };
