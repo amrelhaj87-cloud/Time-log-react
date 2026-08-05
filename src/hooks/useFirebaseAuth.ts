@@ -17,12 +17,12 @@ export function useFirebaseAuth() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+  const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
+    setUser(currentUser);
+    setLoading(false);
+  });
+  return () => unsubscribe();
+}, []);
 
   const loginWithGoogle = async () => {
     setError(null);
