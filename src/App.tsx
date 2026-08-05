@@ -9,6 +9,7 @@ import { useFirebaseSync } from './hooks/useFirebaseSync';
 // المكونات
 import { ErrorBoundary } from './components/Common/ErrorBoundary';
 import { Header } from './components/Header';
+import { WeekStrip } from './components/Dashboard/WeekStrip';
 import { TagRings } from './components/Dashboard/TagRings';
 import { HoursSection } from './components/Hours/HoursSection';
 import { TimerBar } from './components/Hours/TimerBar';
@@ -27,7 +28,7 @@ function AppContent() {
   const { lang } = useLanguage();
   const { isDarkMode } = useTheme();
 
-  // 1. حسابات Firebase والمزامنة (Phase 5)
+  // 1. حسابات Firebase والمزامنة
   const {
     user,
     loginWithGoogle,
@@ -50,11 +51,11 @@ function AppContent() {
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isCompact, setIsCompact] = useState<boolean>(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   const { dayStats, weekStats, monthStats, daysInMonth } = useDistribution(currentDate);
 
-  // 3. حالات المودالات (التايمر + الإحصائيات + Auth + Export + Settings)
+  // 3. حالات المودالات
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -76,7 +77,7 @@ function AppContent() {
     q4: [{ id: '4', text: '', done: false, tag: '' }],
   });
 
-  // مزامنة البيانات تلقائياً مع السحاب عند تعديل أي شيء
+  // مزامنة البيانات تلقائياً مع السحاب
   const dateStr = currentDate.toISOString().split('T')[0];
   useEffect(() => {
     if (user) {
@@ -162,62 +163,41 @@ function AppContent() {
 
   return (
     <div className={`wrap max-w-[860px] mx-auto p-2 sm:p-4 min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* 1. الشريط العلوي للحسابات والأدوات الإضافية (Auth + Export + Settings) */}
-      <div className="flex justify-between items-center mb-2 px-1 text-xs gap-2">
-        {user ? (
-          <div className="flex items-center gap-2 truncate">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-            <span className="font-bold text-[var(--teal-dark)] truncate">
-              {user.displayName || user.email}
-            </span>
-            <button
-              onClick={logout}
-              className="text-[10px] text-[var(--rose)] hover:underline cursor-pointer shrink-0"
-            >
-              ({lang === 'ar' ? 'خروج' : 'Logout'})
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-[var(--teal-tint)] border border-[var(--teal)] text-[var(--teal-dark)] font-bold text-[11px] hover:bg-[var(--teal)] hover:text-white transition-colors cursor-pointer"
-          >
-            <span>🔑</span>
-            <span>{lang === 'ar' ? 'تسجيل الدخول' : 'Sign in'}</span>
-          </button>
-        )}
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-1 py-1 px-2.5 rounded-lg bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] font-bold text-[11px] hover:border-[var(--teal)] transition-colors cursor-pointer"
-          >
-            <span>✨</span>
-            <span className="hidden sm:inline">{lang === 'ar' ? 'التحليل والتصدير' : 'AI & Export'}</span>
-          </button>
-
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="flex items-center gap-1 py-1 px-2.5 rounded-lg bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] font-bold text-[11px] hover:border-[var(--teal)] transition-colors cursor-pointer"
-            title={lang === 'ar' ? 'الإعدادات وحاسبة العمر' : 'Settings & Age Calculator'}
-          >
-            <span>⚙️</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. الهيدر الرئيسي */}
+      {/* 1. الهيدر الرئيسي المحدث */}
       <Header
         currentDate={currentDate}
         onPickDate={setCurrentDate}
         isCompact={isCompact}
         onToggleCompact={() => setIsCompact(!isCompact)}
-        saveStatus={saveStatus}
         ringFilled={dayStats.loggedTotal}
         ringTotal={dayStats.totalSlots}
+        onOpenStatsModal={() => setIsStatsModalOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        user={user}
+        onLogout={logout}
       />
 
-      {/* 3. حلقات التاقات (Phase 4) */}
+      {/* 2. شريط الأسبوع المحدث الذي يبدأ من الاثنين */}
+      {!isCompact && (
+        <WeekStrip
+          currentDate={currentDate}
+          onSelectDate={setCurrentDate}
+          onPrevWeek={() => {
+            const newDate = new Date(currentDate);
+            newDate.setDate(newDate.getDate() - 7);
+            setCurrentDate(newDate);
+          }}
+          onNextWeek={() => {
+            const newDate = new Date(currentDate);
+            newDate.setDate(newDate.getDate() + 7);
+            setCurrentDate(newDate);
+          }}
+          onToday={() => setCurrentDate(new Date())}
+        />
+      )}
+
+      {/* 3. حلقات التاقات */}
       {!isCompact && (
         <div className="mb-3">
           <TagRings
@@ -228,7 +208,7 @@ function AppContent() {
         </div>
       )}
 
-      {/* 4. قسم الساعات + التايمر (Phase 2 & 3) */}
+      {/* 4. قسم الساعات + التايمر */}
       <section className="bg-[var(--card)] border border-[var(--line)] rounded-[var(--radius)] p-2.5 sm:p-3 mb-3 shadow-xs">
         <TimerBar
           isRunning={isRunning}
@@ -241,7 +221,7 @@ function AppContent() {
         <HoursSection />
       </section>
 
-      {/* 5. قسم الأولويات والهدف الذهبي (Phase 3) */}
+      {/* 5. قسم الأولويات والهدف الذهبي */}
       <PrioritiesSection
         goldenGoal={goldenGoal}
         quadrants={quadrants}
@@ -257,7 +237,7 @@ function AppContent() {
       {/* 6. الفوتر */}
       <Footer />
 
-      {/* 7. المودالات الكاملة */}
+      {/* 7. المودالات */}
       <TimerModal
         isOpen={isTimerModalOpen}
         onClose={() => setIsTimerModalOpen(false)}
