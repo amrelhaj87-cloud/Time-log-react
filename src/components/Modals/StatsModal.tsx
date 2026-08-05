@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ModalOverlay } from '../Common/ModalOverlay';
 import { useLanguage } from '../../context/LanguageContext';
 import { DistributionRing } from '../Charts/DistributionRing';
 import type { DistributionResult } from '../../lib/distribution';
@@ -25,8 +24,8 @@ export const StatsModal: React.FC<StatsModalProps> = ({
   const avgPerDay = (stats.loggedTotal / daysCount).toFixed(1);
 
   return (
-    <ModalOverlay isOpen={isOpen} onClose={onClose}>
-      <div className="max-w-[500px] w-full p-4 bg-[var(--card)] rounded-2xl border border-[var(--line)] shadow-xl dir-rtl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs dir-rtl">
+      <div className="max-w-[500px] w-full p-4 bg-[var(--card)] rounded-2xl border border-[var(--line)] shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-2 mb-3 border-b border-[var(--line)]">
           <h3 className="font-bold text-lg text-[var(--teal-dark)] flex items-center gap-2">
             <span>📊</span>
@@ -41,13 +40,13 @@ export const StatsModal: React.FC<StatsModalProps> = ({
         <div className="flex gap-1 mb-4 border-b border-[var(--line)] pb-2">
           <button
             onClick={() => setActiveTab('week')}
-            className={`flex-1 pb-1 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'week' ? 'text-[var(--teal-dark)] border-[var(--teal)]' : 'text-[var(--ink-faint)] border-transparent'}`}
+            className={`flex-1 pb-1 text-[11px] font-bold border-b-2 transition-colors cursor-pointer ${activeTab === 'week' ? 'text-[var(--teal-dark)] border-[var(--teal)]' : 'text-[var(--ink-faint)] border-transparent'}`}
           >
             {lang === 'ar' ? 'إحصائيات الأسبوع' : 'Weekly Stats'}
           </button>
           <button
             onClick={() => setActiveTab('month')}
-            className={`flex-1 pb-1 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'month' ? 'text-[var(--teal-dark)] border-[var(--teal)]' : 'text-[var(--ink-faint)] border-transparent'}`}
+            className={`flex-1 pb-1 text-[11px] font-bold border-b-2 transition-colors cursor-pointer ${activeTab === 'month' ? 'text-[var(--teal-dark)] border-[var(--teal)]' : 'text-[var(--ink-faint)] border-transparent'}`}
           >
             {lang === 'ar' ? 'إحصائيات الشهر' : 'Monthly Stats'}
           </button>
@@ -73,6 +72,6 @@ export const StatsModal: React.FC<StatsModalProps> = ({
           <DistributionRing data={stats} size={160} />
         </div>
       </div>
-    </ModalOverlay>
+    </div>
   );
 };

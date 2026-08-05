@@ -9,12 +9,12 @@ interface TagRingsProps {
 }
 
 const TAGS_CONFIG = [
-  { code: 'E', color: 'var(--teal)', label: { ar: 'Earning (الكسب)', en: 'Earning' } },
-  { code: 'V', color: 'var(--amber)', label: { ar: 'Vision (الرؤية)', en: 'Vision' } },
-  { code: 'R', color: 'var(--blue)', label: { ar: 'Recovery (التعافي)', en: 'Recovery' } },
-  { code: 'S', color: 'var(--rose)', label: { ar: 'Service (الخدمة)', en: 'Service' } },
-  { code: 'SC', color: '#7C5CBF', label: { ar: 'Self-Care (الرعاية)', en: 'Self-Care' } },
-  { code: 'SL', color: '#2E3A6B', label: { ar: 'Sleep (النوم)', en: 'Sleep' } },
+  { code: 'E', color: 'var(--teal)' },
+  { code: 'V', color: 'var(--amber)' },
+  { code: 'R', color: 'var(--blue)' },
+  { code: 'S', color: 'var(--rose)' },
+  { code: 'SC', color: '#7C5CBF' },
+  { code: 'SL', color: '#2E3A6B' },
 ];
 
 export const TagRings: React.FC<TagRingsProps> = ({ counts, totalSlots, onClick }) => {
@@ -28,8 +28,8 @@ export const TagRings: React.FC<TagRingsProps> = ({ counts, totalSlots, onClick 
       onClick={onClick}
       title={lang === 'ar' ? 'اضغط لعرض الإحصائيات التفصيلية' : 'Click to view detailed stats'}
     >
-      {TAGS_CONFIG.map(({ code, color, label }) => {
-        const count = counts[code as keyof DistributionCounts] || 0;
+      {TAGS_CONFIG.map(({ code, color }) => {
+        const count = counts[code as keyof Omit<DistributionCounts, 'unassigned' | 'empty'>] || 0;
         const pct = totalSlots > 0 ? count / totalSlots : 0;
         const offset = circumference * (1 - Math.min(pct, 1));
 
